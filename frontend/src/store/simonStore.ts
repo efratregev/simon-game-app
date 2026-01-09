@@ -24,6 +24,13 @@ interface SimonStore {
   playerSequence: Color[];
   canSubmit: boolean;
   
+  // Timer state (Step 3)
+  timeoutAt: number | null;
+  timeoutSeconds: number;
+  secondsRemaining: number;
+  timerColor: 'green' | 'yellow' | 'red';
+  isTimerPulsing: boolean;
+  
   // Result state
   lastResult: {
     isCorrect: boolean;
@@ -41,13 +48,18 @@ interface SimonStore {
   addColorToSequence: (color: Color) => void;
   submitSequence: (gameCode: string, playerId: string) => void;
   clearPlayerSequence: () => void;
+  startTimer: (timeoutAt: number, timeoutSeconds: number) => void;
+  stopTimer: () => void;
 }
 
 // =============================================================================
 // STORE
 // =============================================================================
 
-export const useSimonStore = create<SimonStore>((set) => ({
+// Track timer interval (Step 3)
+let timerInterval: number | null = null;
+
+export const useSimonStore = create<SimonStore>((set, get) => ({
   // Initial state
   gameState: null,
   isShowingSequence: false,
@@ -56,6 +68,11 @@ export const useSimonStore = create<SimonStore>((set) => ({
   isInputPhase: false,
   playerSequence: [],
   canSubmit: false,
+  timeoutAt: null,
+  timeoutSeconds: 0,
+  secondsRemaining: 0,
+  timerColor: 'green',
+  isTimerPulsing: false,
   lastResult: null,
   message: 'Waiting for game to start...',
   isGameActive: false,
@@ -99,8 +116,8 @@ export const useSimonStore = create<SimonStore>((set) => ({
       });
     });
     
-    // Listen for input phase (Step 2)
-    socket.on('simon:input_phase', (data: { round: number }) => {
+    // Listen for input phase (Step 2 & Step 3)
+    socket.on('simon:input_phase', (data: { round: number; timeoutAt: number; timeoutSeconds: number }) => {
       console.log('🎮 Input phase started:', data);
       
       set({
@@ -110,11 +127,19 @@ export const useSimonStore = create<SimonStore>((set) => ({
         lastResult: null,
         message: 'Your turn! Click the colors in order',
       });
+      
+      // Step 3: Start countdown timer
+      const store = get();
+      store.startTimer(data.timeoutAt, data.timeoutSeconds);
     });
     
-    // Listen for result (Step 2)
+    // Listen for result (Step 2 & Step 3)
     socket.on('simon:result', (data: { playerId: string; playerName: string; isCorrect: boolean; correctSequence: Color[] }) => {
       console.log('📊 Result received:', data);
+      
+      // Step 3: Stop timer
+      const store = get();
+      store.stopTimer();
       
       set({
         isInputPhase: false,
@@ -125,6 +150,24 @@ export const useSimonStore = create<SimonStore>((set) => ({
         message: data.isCorrect 
           ? `✅ ${data.playerName} got it correct! Next round coming...`
           : `❌ ${data.playerName} got it wrong. Correct: ${data.correctSequence.join(', ')}`,
+      });
+    });
+    
+    // Listen for timeout (Step 3)
+    socket.on('simon:timeout', (data: { playerId: string; playerName: string; correctSequence: Color[] }) => {
+      console.log('⏰ Timeout received:', data);
+      
+      // Stop timer
+      const store = get();
+      store.stopTimer();
+      
+      set({
+        isInputPhase: false,
+        lastResult: {
+          isCorrect: false,
+          playerName: data.playerName,
+        },
+        message: `⏰ Time's up! ${data.playerName} ran out of time. Correct: ${data.correctSequence.join(', ')}`,
       });
     });
     
@@ -167,9 +210,16 @@ export const useSimonStore = create<SimonStore>((set) => ({
     socket.off('simon:sequence_complete');
     socket.off('simon:input_phase');
     socket.off('simon:result');
+    socket.off('simon:timeout');
     socket.off('simon:game_finished');
     socket.off('simon:player_eliminated');
     socket.off('simon:input_correct');
+    
+    // Stop timer (Step 3)
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
     
     // Reset state
     set({
@@ -180,6 +230,11 @@ export const useSimonStore = create<SimonStore>((set) => ({
       isInputPhase: false,
       playerSequence: [],
       canSubmit: false,
+      timeoutAt: null,
+      timeoutSeconds: 0,
+      secondsRemaining: 0,
+      timerColor: 'green',
+      isTimerPulsing: false,
       lastResult: null,
       message: 'Waiting for game to start...',
       isGameActive: false,
@@ -260,6 +315,79 @@ export const useSimonStore = create<SimonStore>((set) => ({
     set({
       playerSequence: [],
       canSubmit: false,
+    });
+  },
+  
+  /**
+   * Start countdown timer (Step 3)
+   */
+  startTimer: (timeoutAt: number, timeoutSeconds: number) => {
+    // Clear any existing timer
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    
+    console.log(`⏰ Starting timer: ${timeoutSeconds}s`);
+    
+    // Set initial state
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((timeoutAt - now) / 1000));
+      return remaining;
+    };
+    
+    const updateTimerState = () => {
+      const remaining = calculateTimeLeft();
+      
+      // Determine color and pulsing based on remaining time
+      let color: 'green' | 'yellow' | 'red' = 'green';
+      let isPulsing = false;
+      
+      if (remaining <= 3) {
+        color = 'red';
+        isPulsing = true;
+      } else if (remaining <= 5) {
+        color = 'red';
+      } else if (remaining <= 10) {
+        color = 'yellow';
+      }
+      
+      set({
+        timeoutAt,
+        timeoutSeconds,
+        secondsRemaining: remaining,
+        timerColor: color,
+        isTimerPulsing: isPulsing,
+      });
+      
+      // Stop timer if time's up
+      if (remaining <= 0) {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+    };
+    
+    // Update immediately
+    updateTimerState();
+    
+    // Update every 100ms for smooth display
+    timerInterval = window.setInterval(updateTimerState, 100);
+  },
+  
+  /**
+   * Stop countdown timer (Step 3)
+   */
+  stopTimer: () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    
+    set({
+      timeoutAt: null,
+      secondsRemaining: 0,
     });
   },
 }));

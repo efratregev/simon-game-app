@@ -142,6 +142,8 @@ export interface SimonGameState {
   playerStates: Record<string, SimonPlayerState>;
   currentShowingIndex: number;                 // For animation during showing
   timeoutMs: number;                           // Time limit per input
+  timeoutAt: number | null;                    // Timestamp when timeout occurs (Step 3)
+  timerStartedAt: number | null;               // Timestamp when input phase began (Step 3)
   winnerId: string | null;                     // Last player standing
 }
 
@@ -163,6 +165,12 @@ export interface SimonServerEvents {
   
   'simon:sequence_complete': () => void;
   
+  'simon:input_phase': (data: {
+    round: number;
+    timeoutAt: number;
+    timeoutSeconds: number;
+  }) => void;
+  
   'simon:your_turn': (data: {
     timeoutMs: number;
   }) => void;
@@ -170,6 +178,12 @@ export interface SimonServerEvents {
   'simon:input_correct': (data: {
     playerId: string;
     index: number;
+  }) => void;
+  
+  'simon:timeout': (data: {
+    playerId: string;
+    playerName: string;
+    correctSequence: Color[];
   }) => void;
   
   'simon:player_eliminated': (data: {

@@ -23,6 +23,10 @@ interface SimonBoardProps {
   onColorClick: (color: Color) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  // Step 3: Timer props
+  secondsRemaining: number;
+  timerColor: 'green' | 'yellow' | 'red';
+  isTimerPulsing: boolean;
 }
 
 interface ColorButtonProps {
@@ -92,6 +96,9 @@ export const SimonBoard: React.FC<SimonBoardProps> = ({
   onColorClick,
   onSubmit,
   disabled = false,
+  secondsRemaining,
+  timerColor,
+  isTimerPulsing,
 }) => {
   const [activeColor, setActiveColor] = useState<Color | null>(null);
   const [animationIndex, setAnimationIndex] = useState<number>(0);
@@ -184,6 +191,36 @@ export const SimonBoard: React.FC<SimonBoardProps> = ({
                 : '✅ Ready'}
         </p>
       </div>
+      
+      {/* Timer Display (Step 3) */}
+      {isInputPhase && secondsRemaining > 0 && (
+        <div className="flex flex-col items-center gap-1">
+          <div className="text-xs sm:text-sm text-gray-400 font-semibold">
+            ⏱️ TIME REMAINING
+          </div>
+          <div 
+            className={`
+              font-bold transition-all duration-200
+              ${secondsRemaining > 10 ? 'text-5xl sm:text-6xl' : ''}
+              ${secondsRemaining > 5 && secondsRemaining <= 10 ? 'text-6xl sm:text-7xl' : ''}
+              ${secondsRemaining <= 5 ? 'text-7xl sm:text-8xl' : ''}
+              ${timerColor === 'green' ? 'text-green-500' : ''}
+              ${timerColor === 'yellow' ? 'text-yellow-500' : ''}
+              ${timerColor === 'red' ? 'text-red-500' : ''}
+              ${isTimerPulsing ? 'animate-pulse' : ''}
+            `}
+          >
+            {secondsRemaining}s
+          </div>
+        </div>
+      )}
+      
+      {/* "Time's Up!" message */}
+      {isInputPhase && secondsRemaining === 0 && (
+        <div className="text-5xl sm:text-6xl font-bold text-red-500 animate-pulse">
+          ⏰ TIME'S UP!
+        </div>
+      )}
       
       {/* Color Grid (2x2) */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 md:p-6 bg-gray-800 rounded-2xl sm:rounded-3xl shadow-2xl w-full">

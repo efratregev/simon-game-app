@@ -28,6 +28,9 @@ export function WaitingRoomPage() {
     canSubmit,
     lastResult,
     message,
+    secondsRemaining,
+    timerColor,
+    isTimerPulsing,
     initializeListeners,
     cleanup,
     addColorToSequence,
@@ -205,6 +208,9 @@ export function WaitingRoomPage() {
               }
             }}
             disabled={false}
+            secondsRemaining={secondsRemaining}
+            timerColor={timerColor}
+            isTimerPulsing={isTimerPulsing}
           />
           
           {/* Message Display */}

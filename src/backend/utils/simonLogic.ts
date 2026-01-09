@@ -44,6 +44,8 @@ export function initializeSimonGame(players: Player[]): SimonGameState {
     playerStates,
     currentShowingIndex: 0,
     timeoutMs: SIMON_CONSTANTS.INITIAL_TIMEOUT_MS,
+    timeoutAt: null,        // Step 3: Set when input phase begins
+    timerStartedAt: null,   // Step 3: Set when input phase begins
     winnerId: null,
   };
 }
@@ -72,6 +74,25 @@ export function generateSequence(length: number): Color[] {
 export function extendSequence(currentSequence: Color[]): Color[] {
   const randomIndex = Math.floor(Math.random() * COLORS.length);
   return [...currentSequence, COLORS[randomIndex]];
+}
+
+// =============================================================================
+// TIMING (Step 3)
+// =============================================================================
+
+/**
+ * Calculate timeout in seconds based on sequence length
+ * Formula: 15 + (sequenceLength × 2) seconds
+ */
+export function calculateTimeoutSeconds(sequenceLength: number): number {
+  return 15 + (sequenceLength * 2);
+}
+
+/**
+ * Calculate timeout in milliseconds based on sequence length
+ */
+export function calculateTimeoutMs(sequenceLength: number): number {
+  return calculateTimeoutSeconds(sequenceLength) * 1000;
 }
 
 // =============================================================================

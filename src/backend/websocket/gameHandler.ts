@@ -23,6 +23,8 @@ import {
   shouldGameEnd,
   getWinner,
   updatePlayerProgress,
+  calculateTimeoutSeconds,
+  calculateTimeoutMs,
 } from '../utils/simonLogic';
 import { PLATFORM_CONSTANTS, COLOR_RACE_CONSTANTS, SIMON_CONSTANTS } from '@shared/types';
 import type { Player } from '@shared/types';
@@ -40,6 +42,9 @@ interface SocketWithSession extends Socket {
 
 // Track disconnect timeouts for cleanup
 const disconnectTimeouts = new Map<string, NodeJS.Timeout>();
+
+// Track Simon game timeouts (Step 3)
+const simonTimeouts = new Map<string, NodeJS.Timeout>();
 
 // =============================================================================
 // INITIALIZATION
@@ -329,7 +334,7 @@ function registerGameHandlers(io: Server, socket: SocketWithSession): void {
   });
   
   /**
-   * Simon: Submit complete sequence (Step 2)
+   * Simon: Submit complete sequence (Step 2 & Step 3)
    */
   socket.on('simon:submit_sequence', (data: { gameCode: string; playerId: string; sequence: Color[] }) => {
     try {
@@ -351,6 +356,14 @@ function registerGameHandlers(io: Server, socket: SocketWithSession): void {
       const playerState = gameState.playerStates[playerId];
       if (!playerState || playerState.status !== 'playing') {
         return;
+      }
+      
+      // Step 3: Cancel timeout (player submitted in time)
+      const existingTimeout = simonTimeouts.get(gameCode);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        simonTimeouts.delete(gameCode);
+        console.log(`⏰ Timeout cancelled - player submitted in time`);
       }
       
       // Get player info
@@ -616,17 +629,48 @@ function showSimonSequence(io: Server, gameCode: string, gameState: SimonGameSta
   // Each color shows for SHOW_COLOR_DURATION_MS + GAP
   const totalTime = sequence.length * (SIMON_CONSTANTS.SHOW_COLOR_DURATION_MS + SIMON_CONSTANTS.SHOW_COLOR_GAP_MS);
   
-  // After sequence completes, start input phase (Step 2)
+  // After sequence completes, start input phase (Step 2 & Step 3)
   setTimeout(() => {
     io.to(gameCode).emit('simon:sequence_complete');
     
     // Wait 500ms, then enable input
     setTimeout(() => {
+      const room = gameService.getRoom(gameCode);
+      if (!room || room.status !== 'active') return;
+      
+      const currentState = room.gameState as SimonGameState;
+      if (!currentState || currentState.gameType !== 'simon') return;
+      
+      // Step 3: Calculate timeout based on sequence length
+      const timeoutSeconds = calculateTimeoutSeconds(currentState.sequence.length);
+      const timeoutMs = calculateTimeoutMs(currentState.sequence.length);
+      const now = Date.now();
+      const timeoutAt = now + timeoutMs;
+      
+      // Update game state with timeout timestamps
+      const updatedState: SimonGameState = {
+        ...currentState,
+        phase: 'player_input',
+        timeoutAt,
+        timerStartedAt: now,
+      };
+      gameService.updateGameState(gameCode, updatedState);
+      
+      // Emit input phase with timeout data (Step 3)
       io.to(gameCode).emit('simon:input_phase', {
-        round: gameState.round,
+        round: currentState.round,
+        timeoutAt,
+        timeoutSeconds,
       });
       
-      console.log(`🎮 Input phase started for round ${round}`);
+      console.log(`⏰ Input phase started for round ${round} - ${timeoutSeconds}s timeout`);
+      
+      // Step 3: Set server-side timeout
+      const timeout = setTimeout(() => {
+        handleSimonTimeout(io, gameCode);
+      }, timeoutMs);
+      
+      simonTimeouts.set(gameCode, timeout);
     }, 500);
   }, totalTime + 500);
 }
@@ -649,6 +693,49 @@ function advanceSimonRound(io: Server, gameCode: string): void {
   
   // Show new sequence
   showSimonSequence(io, gameCode, newState);
+}
+
+/**
+ * Handle Simon timeout (Step 3)
+ */
+function handleSimonTimeout(io: Server, gameCode: string): void {
+  const room = gameService.getRoom(gameCode);
+  if (!room || room.status !== 'active') return;
+  
+  const gameState = room.gameState as SimonGameState;
+  if (!gameState || gameState.gameType !== 'simon') return;
+  
+  console.log(`⏰ Timeout expired for room ${gameCode}`);
+  
+  // Get the first active player (for Step 2-3, assuming single player)
+  const activePlayer = Object.values(gameState.playerStates).find(
+    state => state.status === 'playing'
+  );
+  
+  if (!activePlayer) return;
+  
+  const player = room.players.find(p => p.id === activePlayer.playerId);
+  
+  // Emit timeout event
+  io.to(gameCode).emit('simon:timeout', {
+    playerId: activePlayer.playerId,
+    playerName: player?.displayName || 'Unknown',
+    correctSequence: gameState.sequence,
+  });
+  
+  // Eliminate the player
+  const newState = eliminatePlayer(gameState, activePlayer.playerId, gameState.round);
+  gameService.updateGameState(gameCode, newState);
+  
+  console.log(`❌ Player ${activePlayer.playerId} timed out`);
+  
+  // End the game (for now, Step 2-3)
+  setTimeout(() => {
+    finishSimonGame(io, gameCode, newState, room);
+  }, 2000);
+  
+  // Clear timeout
+  simonTimeouts.delete(gameCode);
 }
 
 /**
