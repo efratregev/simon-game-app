@@ -233,19 +233,14 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
 
     // CRITICAL: Capture sequence length and round at the start to prevent closure issues
     // Store them in variables that won't change during the animation
+    // Always use the current props, don't rely on refs that might be stale
     const sequenceLength = sequence.length;
     const sequenceToShow = [...sequence]; // Create a copy to ensure we have the exact sequence
     const currentRound = round; // Capture round value
+    
+    // Update refs for tracking
     sequenceRef.current = sequenceToShow;
-    
-    // Only skip if we've already animated this exact round AND sequence length
-    // This prevents duplicate animations but allows new rounds to animate
-    if (lastAnimatedRound.current === currentRound && sequenceLength === sequenceRef.current.length) {
-      console.log(`🎨 Skipping animation - already animated round ${currentRound} with length ${sequenceLength}`);
-      return;
-    }
-    
-    lastAnimatedRound.current = currentRound; // Mark this round as animated
+    lastAnimatedRound.current = currentRound;
     
     console.log(`🎨 Starting sequence animation: Round ${round}, Length: ${sequenceLength}, Sequence:`, sequenceToShow);
 
