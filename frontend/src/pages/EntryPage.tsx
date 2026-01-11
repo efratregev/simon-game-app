@@ -1,8 +1,9 @@
 /**
  * Entry Page
  * 
- * Name + avatar selection page.
- * First screen players see.
+ * Main menu with two paths:
+ * 1. Play Solo - Jump straight into a single player game
+ * 2. Play with Friends - Create or join a multiplayer game
  * 
  * UI Design: Dark theme with neon accents (Top Game App Style)
  */
@@ -12,9 +13,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createSession, joinGame } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 
+type Mode = 'menu' | 'solo' | 'multiplayer' | 'create' | 'join';
+
 export function EntryPage() {
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'create' | 'join' | null>(null);
+  const [mode, setMode] = useState<Mode>('menu');
   const [displayName, setDisplayName] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [avatarId, setAvatarId] = useState('1');
@@ -65,8 +68,31 @@ export function EntryPage() {
     }
   };
 
-  // Mode selection screen
-  if (!mode) {
+  // Handle solo play - creates a game and immediately starts
+  const handleSoloPlay = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await createSession(displayName, avatarId);
+      setSession(response.session);
+      navigate('/waiting');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start game');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get back destination based on current mode
+  const getBackDestination = (): Mode => {
+    if (mode === 'create' || mode === 'join') return 'multiplayer';
+    return 'menu';
+  };
+
+  // Main menu screen
+  if (mode === 'menu') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Animated background glow */}
@@ -83,7 +109,70 @@ export function EntryPage() {
               Regev Said
             </h1>
             <p className="text-purple-300 text-lg font-medium tracking-wider uppercase">
-              Color Race Edition
+              Memory Challenge
+            </p>
+          </div>
+
+          {/* Main Card */}
+          <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl p-8 border border-purple-500/30 shadow-2xl shadow-purple-500/20">
+            <div className="space-y-4">
+              {/* Play Solo Button - Primary */}
+              <button
+                onClick={() => setMode('solo')}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 active:scale-95 text-white font-black py-6 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-green-500/30 hover:shadow-green-500/50 border-b-4 border-green-700 active:border-b-0 active:mt-1"
+                style={{ touchAction: 'manipulation' }}
+              >
+                <span className="flex items-center justify-center gap-3">
+                  <span className="text-3xl">🎯</span>
+                  <div className="text-left">
+                    <div className="text-xl">PLAY SOLO</div>
+                    <div className="text-sm font-medium opacity-80">Challenge yourself</div>
+                  </div>
+                </span>
+              </button>
+              
+              {/* Play with Friends Button - Secondary */}
+              <button
+                onClick={() => setMode('multiplayer')}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 border-b-4 border-blue-700 active:border-b-0 active:mt-1"
+                style={{ touchAction: 'manipulation' }}
+              >
+                <span className="flex items-center justify-center gap-3">
+                  <span className="text-2xl">👥</span>
+                  PLAY WITH FRIENDS
+                </span>
+              </button>
+            </div>
+
+            {/* Footer hint */}
+            <p className="text-center text-purple-400/60 text-sm mt-6">
+              Test your memory • No account needed
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Multiplayer menu (Create or Join)
+  if (mode === 'multiplayer') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated background glow */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+
+        <div className="relative z-10 w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-3">👥</div>
+            <h1 className="text-3xl font-black text-white mb-1">
+              Play with Friends
+            </h1>
+            <p className="text-purple-300">
+              Create a room or join an existing one
             </p>
           </div>
 
@@ -93,39 +182,51 @@ export function EntryPage() {
               {/* Create Game Button */}
               <button
                 onClick={() => setMode('create')}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-green-500/30 hover:shadow-green-500/50 border-b-4 border-green-700 active:border-b-0 active:mt-1"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 border-b-4 border-purple-700 active:border-b-0 active:mt-1"
                 style={{ touchAction: 'manipulation' }}
               >
                 <span className="flex items-center justify-center gap-3">
                   <span className="text-2xl">🚀</span>
-                  CREATE GAME
+                  CREATE ROOM
                 </span>
               </button>
               
               {/* Join Game Button */}
               <button
                 onClick={() => setMode('join')}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 border-b-4 border-blue-700 active:border-b-0 active:mt-1"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 border-b-4 border-orange-700 active:border-b-0 active:mt-1"
                 style={{ touchAction: 'manipulation' }}
               >
                 <span className="flex items-center justify-center gap-3">
                   <span className="text-2xl">🎯</span>
-                  JOIN GAME
+                  JOIN ROOM
                 </span>
               </button>
             </div>
 
-            {/* Footer hint */}
-            <p className="text-center text-purple-400/60 text-sm mt-6">
-              Play with friends • No account needed
-            </p>
+            {/* Back Button */}
+            <button
+              onClick={() => setMode('menu')}
+              className="w-full mt-6 text-purple-400/60 hover:text-purple-300 font-medium py-2 transition-colors"
+            >
+              ← Back to Menu
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Create/Join form
+  // Solo or Create/Join forms
+  const isSolo = mode === 'solo';
+  const isJoin = mode === 'join';
+  const formTitle = isSolo ? '🎯 Play Solo' : isJoin ? '🎯 Join Room' : '🚀 Create Room';
+  const formSubtitle = isSolo 
+    ? 'Enter your name to start' 
+    : isJoin 
+      ? 'Enter the game code to join' 
+      : 'Set up your game room';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background glow */}
@@ -138,10 +239,10 @@ export function EntryPage() {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-black text-white mb-1">
-            {mode === 'create' ? '🚀 Create Game' : '🎯 Join Game'}
+            {formTitle}
           </h1>
           <p className="text-purple-300">
-            {mode === 'create' ? 'Set up your game room' : 'Enter the game code'}
+            {formSubtitle}
           </p>
         </div>
 
@@ -149,13 +250,13 @@ export function EntryPage() {
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-purple-500/30 shadow-2xl shadow-purple-500/20">
           {/* Back Button */}
           <button
-            onClick={() => setMode(null)}
+            onClick={() => setMode(getBackDestination())}
             className="flex items-center gap-2 text-purple-400 hover:text-purple-300 active:text-purple-200 mb-6 font-medium transition-colors"
           >
-            <span>←</span> Back to Menu
+            <span>←</span> Back
           </button>
           
-          <form onSubmit={mode === 'create' ? handleCreateGame : handleJoinGame} className="space-y-5">
+          <form onSubmit={isSolo ? handleSoloPlay : (isJoin ? handleJoinGame : handleCreateGame)} className="space-y-5">
             {/* Display Name */}
             <div>
               <label className="block text-sm font-bold text-purple-300 mb-2 uppercase tracking-wide">
@@ -174,7 +275,7 @@ export function EntryPage() {
             </div>
             
             {/* Game Code (Join only) */}
-            {mode === 'join' && (
+            {isJoin && (
               <div>
                 <label className="block text-sm font-bold text-purple-300 mb-2 uppercase tracking-wide">
                   Game Code
@@ -232,9 +333,11 @@ export function EntryPage() {
               type="submit"
               disabled={loading}
               className={`w-full font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg border-b-4 active:border-b-0 active:mt-1 active:scale-95 ${
-                mode === 'create'
+                isSolo
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-green-500/30 hover:shadow-green-500/50 border-green-700'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 text-white shadow-blue-500/30 hover:shadow-blue-500/50 border-blue-700'
+                  : isJoin
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-white shadow-orange-500/30 hover:shadow-orange-500/50 border-orange-700'
+                    : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white shadow-purple-500/30 hover:shadow-purple-500/50 border-purple-700'
               } disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100`}
               style={{ touchAction: 'manipulation' }}
             >
@@ -244,7 +347,7 @@ export function EntryPage() {
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  {mode === 'create' ? '🎮 START GAME' : '🚀 JOIN NOW'}
+                  {isSolo ? '🎮 START GAME' : isJoin ? '🚀 JOIN NOW' : '🎮 CREATE ROOM'}
                 </span>
               )}
             </button>
