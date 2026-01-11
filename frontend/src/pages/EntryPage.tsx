@@ -68,7 +68,7 @@ export function EntryPage() {
     }
   };
 
-  // Handle solo play - creates a game and immediately starts
+  // Handle solo play - creates a game and immediately starts (skips waiting room)
   const handleSoloPlay = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -77,7 +77,8 @@ export function EntryPage() {
     try {
       const response = await createSession(displayName, avatarId);
       setSession(response.session);
-      navigate('/waiting');
+      // Pass solo=true to auto-start the game
+      navigate('/waiting?solo=true');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start game');
     } finally {

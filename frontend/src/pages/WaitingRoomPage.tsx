@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useSimonStore } from '../store/simonStore';
 import { socketService } from '../services/socketService';
@@ -21,6 +21,8 @@ import { MuteButton } from '../components/ui/MuteButton';
 
 export function WaitingRoomPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSoloMode = searchParams.get('solo') === 'true';
   const { session, clearSession } = useAuthStore();
   const gameCode = session?.gameCode;
   const playerId = session?.playerId;
@@ -57,6 +59,8 @@ export function WaitingRoomPage() {
   const [players, setPlayers] = useState<any[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const lastCountdownValue = useRef<number | null>(null);
+  const hasAutoStarted = useRef(false);
+  const [isRoomReady, setIsRoomReady] = useState(false);
   
   // Initialize on mount
   useEffect(() => {
@@ -85,6 +89,7 @@ export function WaitingRoomPage() {
       const isHostPlayer = me?.isHost || false;
       console.log('🎮 isHost check:', { playerId, me, isHostPlayer });
       setIsHost(isHostPlayer);
+      setIsRoomReady(true);
     });
     
     // Listen for room state updates (when players join/leave)
@@ -157,6 +162,16 @@ export function WaitingRoomPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameCode, playerId]); // Removed initializeListeners & cleanup - they're stable
+
+  // Auto-start for solo mode (skip waiting room)
+  useEffect(() => {
+    if (isSoloMode && isRoomReady && !hasAutoStarted.current && roomStatus === 'waiting') {
+      console.log('🎯 Solo mode: Auto-starting game...');
+      hasAutoStarted.current = true;
+      handleStartGame();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSoloMode, isRoomReady, roomStatus]);
   
   // Handle start game (host only)
   const handleStartGame = async () => {
