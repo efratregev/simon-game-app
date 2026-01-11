@@ -3,7 +3,7 @@ services:
   - type: web
     name: simon-game-backend
     runtime: node
-    buildCommand: npm install
+    buildCommand: rm -rf node_modules && npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
