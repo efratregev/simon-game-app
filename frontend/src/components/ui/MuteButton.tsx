@@ -10,7 +10,12 @@
 import { useState, useEffect } from 'react';
 import { soundService } from '../../services/soundService';
 
-export const MuteButton: React.FC = () => {
+interface MuteButtonProps {
+  /** If true, removes fixed positioning for inline use */
+  inline?: boolean;
+}
+
+export const MuteButton: React.FC<MuteButtonProps> = ({ inline = false }) => {
   const [isMuted, setIsMuted] = useState(soundService.getMuted());
 
   // Sync with sound service on mount
@@ -27,8 +32,8 @@ export const MuteButton: React.FC = () => {
     <button
       onClick={handleToggle}
       className={`
-        fixed top-4 right-4 z-50
-        w-14 h-14 rounded-2xl
+        ${inline ? '' : 'fixed top-4 right-4 z-50'}
+        w-12 h-12 rounded-xl
         flex items-center justify-center
         transition-all duration-200
         backdrop-blur-xl border
@@ -41,7 +46,7 @@ export const MuteButton: React.FC = () => {
       aria-label={isMuted ? 'Unmute sounds' : 'Mute sounds'}
       title={isMuted ? 'Click to unmute' : 'Click to mute'}
     >
-      <span className="text-2xl">
+      <span className="text-xl">
         {isMuted ? '🔇' : '🔊'}
       </span>
     </button>

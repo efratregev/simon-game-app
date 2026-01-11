@@ -280,6 +280,20 @@ export function WaitingRoomPage() {
     );
   }
 
+  // Handle Exit Game (leave in the middle)
+  const handleExitGame = () => {
+    // Emit leave_room to server
+    const socket = socketService.getSocket();
+    if (socket && gameCode && playerId) {
+      socket.emit('leave_room', { gameCode, playerId });
+    }
+    
+    // Clean up and go home
+    cleanup();
+    clearSession();
+    navigate('/');
+  };
+
   // Render game board if active
   if (roomStatus === 'active' && isGameActive) {
     return (
@@ -290,8 +304,19 @@ export function WaitingRoomPage() {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
         </div>
         
-        {/* Mute Button */}
-        <MuteButton />
+        {/* Top Right Buttons */}
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          {/* Mute Button (inline) */}
+          <MuteButton inline />
+          {/* Exit Button */}
+          <button
+            onClick={handleExitGame}
+            className="bg-red-500/20 hover:bg-red-500/40 backdrop-blur-xl border border-red-500/50 text-red-400 hover:text-red-300 font-bold px-4 py-3 rounded-xl transition-all duration-150 active:scale-95"
+            style={{ touchAction: 'manipulation' }}
+          >
+            Exit
+          </button>
+        </div>
         
         <div className="relative z-10 flex flex-col items-center w-full max-w-md">
           {/* Scoreboard */}
