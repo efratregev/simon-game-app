@@ -1,5 +1,8 @@
 # Simon Game App - Cursor Rules
 
+## Workflow Preferences
+- **Git**: Commit locally only. Do NOT push automatically - wait for user to push manually.
+
 ## Deployment Configuration
 
 ### Hosting: Render (Free Tier)
