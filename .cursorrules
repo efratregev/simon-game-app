@@ -1,0 +1,91 @@
+# Simon Game App - Cursor Rules
+
+## Deployment Configuration
+
+### Hosting: Render (Free Tier)
+- **Backend**: Web Service (Node.js) - https://simon-game-backend-0a7u.onrender.com
+- **Frontend**: Static Site - https://simon-game-frontend-osx3.onrender.com
+- **Config File**: `render.yaml`
+
+### Service IDs
+- Backend: `srv-d5houkngi27c7384l4qg`
+- Frontend: `srv-d5hoscmr433s73btdls0`
+
+## Critical Deployment Notes
+
+### 1. Package Registry Issue (IMPORTANT!)
+**Problem**: If `package-lock.json` contains references to Wix's private npm registry (`npm.dev.wixpress.com`), Render cannot install packages.
+
+**Symptoms**: 
+- Build succeeds but runtime fails with `Cannot find module 'socket.io'` or similar
+- npm install completes but packages are missing
+
+**Solution**: Regenerate `package-lock.json` using the public registry:
+```bash
+rm -rf node_modules package-lock.json
+npm install --registry https://registry.npmjs.org
+```
+
+**Verification**: Check that no wixpress references exist:
+```bash
+grep -c "wixpress" package-lock.json  # Should return 0
+```
+
+### 2. Render Starter Tier Memory Limits (512MB)
+**Problem**: `npm ci` can crash with "Exit handler never called!" on the free tier.
+
+**Solution**: Use `npm install` instead of `npm ci` in `render.yaml`:
+```yaml
+buildCommand: npm install  # NOT npm ci
+```
+
+### 3. Pre-built Dist Folder
+The `dist/` folder is committed to git to avoid TypeScript compilation on Render (saves memory).
+
+**After code changes, rebuild locally**:
+```bash
+npm run build
+git add dist/
+git commit -m "Rebuild dist"
+```
+
+### 4. Build Commands in render.yaml
+- **Backend**: `rm -rf node_modules && npm install`
+- **Frontend**: `cd frontend && npm install && npm run build`
+
+## Local Development
+
+```bash
+# Start backend
+npm run dev:backend
+
+# Start frontend (in another terminal)
+npm run dev:frontend
+
+# Or both together
+npm run dev
+```
+
+- Backend: http://localhost:3000
+- Frontend: http://localhost:5173
+
+## Checking Render Status
+Use the Render MCP tools:
+```
+mcp_render_list_deploys - Check deploy status
+mcp_render_list_logs - View build/runtime logs
+mcp_render_list_services - List all services
+```
+
+## Common Issues & Fixes
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| `Cannot find module 'X'` at runtime | Private npm registry in lock file | Regenerate package-lock.json with public registry |
+| `Exit handler never called` | npm memory crash | Use `npm install` instead of `npm ci` |
+| Build succeeds, runtime fails | Missing dependencies | Check package-lock.json for private registry URLs |
+| Deploy stuck in queue | Render free tier limits | Wait or clear build cache |
+
+## GitHub Repository
+https://github.com/efratregev/simon-game-app
+
