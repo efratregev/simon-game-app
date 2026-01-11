@@ -412,27 +412,17 @@ export function WaitingRoomPage() {
     );
   }
   
-  // Solo mode: Show loading screen for 2 seconds, skip countdown
-  if (isSoloMode && (roomStatus === 'waiting' || roomStatus === 'countdown')) {
+  // Solo mode: Show minimal loading while waiting for game to start
+  if (isSoloMode && !isGameActive) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
-        
-        <div className="relative z-10 text-center">
-          <div className="text-6xl mb-6 animate-bounce">🎮</div>
-          <h1 className="text-3xl font-black text-white mb-2">Starting Game...</h1>
-          <p className="text-purple-300">Get ready!</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-4xl animate-spin">🎮</div>
       </div>
     );
   }
 
-  // Render countdown (multiplayer only)
-  if (roomStatus === 'countdown' && countdownValue !== null) {
+  // Render countdown (multiplayer only - solo skips this)
+  if (!isSoloMode && roomStatus === 'countdown' && countdownValue !== null) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Animated rings */}
