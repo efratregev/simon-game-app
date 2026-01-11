@@ -352,14 +352,14 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
             </span>
           </button>
 
-          {/* Share Button */}
+          {/* Share Button - Secondary */}
           <button
             onClick={handleShare}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-400 hover:to-cyan-500 active:scale-95 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-150 text-lg shadow-lg shadow-blue-500/30 border-b-4 border-blue-700 active:border-b-0 active:mt-1"
+            className="w-full bg-transparent hover:bg-slate-700/50 active:scale-95 text-purple-400 hover:text-purple-300 font-medium py-3 px-6 rounded-xl transition-all duration-150 border border-purple-500/30 hover:border-purple-500/50"
             style={{ touchAction: 'manipulation' }}
           >
             <span className="flex items-center justify-center gap-2">
-              <span>📤</span> SHARE SCORE
+              <span>📤</span> Share Score
             </span>
           </button>
         </div>
