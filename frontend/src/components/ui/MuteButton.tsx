@@ -3,6 +3,8 @@
  * 
  * Toggle button for muting/unmuting game sounds.
  * Persists preference in localStorage.
+ * 
+ * UI Design: Dark glassmorphism with glow effects
  */
 
 import { useState, useEffect } from 'react';
@@ -26,13 +28,14 @@ export const MuteButton: React.FC = () => {
       onClick={handleToggle}
       className={`
         fixed top-4 right-4 z-50
-        w-12 h-12 rounded-full
+        w-14 h-14 rounded-2xl
         flex items-center justify-center
         transition-all duration-200
+        backdrop-blur-xl border
+        active:scale-90
         ${isMuted 
-          ? 'bg-gray-700 hover:bg-gray-600' 
-          : 'bg-green-600 hover:bg-green-500'}
-        shadow-lg active:scale-95
+          ? 'bg-slate-800/80 border-slate-600/50 hover:bg-slate-700/80 shadow-lg' 
+          : 'bg-green-500/20 border-green-500/50 hover:bg-green-500/30 shadow-lg shadow-green-500/20'}
       `}
       style={{ touchAction: 'manipulation' }}
       aria-label={isMuted ? 'Unmute sounds' : 'Mute sounds'}

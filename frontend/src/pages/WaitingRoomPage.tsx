@@ -4,6 +4,8 @@
  * Combined page that shows:
  * - Waiting room before game starts
  * - Simon game board during gameplay
+ * 
+ * UI Design: Dark theme with neon accents (Top Game App Style)
  */
 
 import { useEffect, useState, useRef } from 'react';
@@ -243,8 +245,8 @@ export function WaitingRoomPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join my Simon Game!',
-          text: `Join me in Simon Says! Use code: ${gameCode}`,
+          title: 'Join my Regev Said game!',
+          text: `Join me in Regev Said! Use code: ${gameCode}`,
           url: inviteUrl,
         });
         setToast({ message: 'Invite shared!', type: 'success' });
@@ -281,15 +283,21 @@ export function WaitingRoomPage() {
   // Render game board if active
   if (roomStatus === 'active' && isGameActive) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-2 sm:p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-2 sm:p-4 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
+        </div>
+        
         {/* Mute Button */}
         <MuteButton />
         
-        <div className="flex flex-col items-center w-full max-w-md">
-          {/* Step 4: Scoreboard */}
+        <div className="relative z-10 flex flex-col items-center w-full max-w-md">
+          {/* Scoreboard */}
           {isGameActive && Object.keys(scores).length > 0 && (
-            <div className="bg-gray-800 rounded-xl sm:rounded-2xl p-2 sm:p-3 mb-3 w-full">
-              <div className="space-y-1">
+            <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl p-3 mb-4 w-full border border-purple-500/30">
+              <div className="space-y-1.5">
                 {players.map((player) => {
                   const score = scores[player.id] || 0;
                   const hasSubmitted = submittedPlayers.includes(player.id);
@@ -298,20 +306,23 @@ export function WaitingRoomPage() {
                   return (
                     <div
                       key={player.id}
-                      className={`flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded ${
-                        isCurrentPlayer ? 'bg-blue-600' : 'bg-gray-700'
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                        isCurrentPlayer 
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30' 
+                          : 'bg-slate-700/50'
                       }`}
                     >
-                      <span className="text-white text-xs sm:text-sm flex items-center gap-1 sm:gap-2">
-                        <span>{player.avatar}</span>
+                      <span className="text-white text-sm font-medium flex items-center gap-2">
+                        <span className="text-lg">{player.avatar}</span>
                         <span>{player.displayName}</span>
+                        {player.isHost && <span className="text-yellow-400 text-xs">👑</span>}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-white text-xs sm:text-sm font-bold">
-                          {score} pts
+                      <div className="flex items-center gap-3">
+                        <span className="text-white text-lg font-black">
+                          {score}
                         </span>
                         {hasSubmitted && isInputPhase && (
-                          <span className="text-green-400 text-xs">✓</span>
+                          <span className="text-green-400 text-sm">✓</span>
                         )}
                       </div>
                     </div>
@@ -321,13 +332,14 @@ export function WaitingRoomPage() {
             </div>
           )}
           
-          {/* Step 4: Eliminated Message */}
+          {/* Eliminated Message */}
           {isEliminated && (
-            <div className="bg-red-500/20 border-2 border-red-500 rounded-xl sm:rounded-2xl p-3 mb-3 text-center w-full">
-              <div className="text-3xl mb-1">💀</div>
-              <div className="text-white text-base sm:text-lg font-bold">
+            <div className="bg-red-500/20 border-2 border-red-500 rounded-2xl p-4 mb-4 text-center w-full animate-pulse">
+              <div className="text-4xl mb-2">💀</div>
+              <div className="text-red-400 text-xl font-black uppercase tracking-wide">
                 Eliminated!
               </div>
+              <p className="text-red-300/60 text-sm mt-1">Watch the others play</p>
             </div>
           )}
           
@@ -353,19 +365,7 @@ export function WaitingRoomPage() {
           
           {/* Message Display */}
           <div className="mt-6 text-center">
-            <p className="text-white text-lg font-medium">{message}</p>
-          </div>
-          
-          {/* Players Status */}
-          <div className="mt-8 bg-white/10 backdrop-blur rounded-2xl p-4">
-            <h3 className="text-white font-bold mb-2">Players</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {players.map(player => (
-                <div key={player.id} className="text-white/80 text-sm">
-                  {player.displayName} {player.isHost && '👑'}
-                </div>
-              ))}
-            </div>
+            <p className="text-purple-200 text-lg font-medium">{message}</p>
           </div>
         </div>
       </div>
@@ -375,10 +375,21 @@ export function WaitingRoomPage() {
   // Render countdown
   if (roomStatus === 'countdown' && countdownValue !== null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-6xl sm:text-7xl md:text-9xl font-bold text-white mb-4">{countdownValue}</h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/80">Get ready!</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated rings */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-64 h-64 border-4 border-purple-500/30 rounded-full animate-ping" />
+          <div className="absolute w-48 h-48 border-4 border-cyan-500/30 rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
+          <div className="absolute w-32 h-32 border-4 border-pink-500/30 rounded-full animate-ping" style={{ animationDelay: '0.4s' }} />
+        </div>
+        
+        <div className="relative z-10 text-center">
+          <div className="text-9xl sm:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-400 animate-pulse">
+            {countdownValue}
+          </div>
+          <p className="text-2xl text-purple-300 font-bold uppercase tracking-widest mt-4">
+            Get Ready!
+          </p>
         </div>
       </div>
     );
@@ -386,7 +397,13 @@ export function WaitingRoomPage() {
   
   // Render waiting room
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+      
       {/* Toast notification */}
       {toast && (
         <Toast
@@ -396,88 +413,136 @@ export function WaitingRoomPage() {
         />
       )}
       
-      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 max-w-md sm:max-w-xl md:max-w-2xl w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">Waiting Room</h1>
+      <div className="relative z-10 w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-black text-white mb-1">⏳ Waiting Room</h1>
+          <p className="text-purple-300">Invite friends to join!</p>
+        </div>
         
-        {/* Game Code Display with Share Buttons */}
-        <div className="mb-6 sm:mb-8">
-          <p className="text-center text-gray-600 mb-3 text-sm sm:text-base">
-            Game Code: <span className="font-mono font-bold text-xl sm:text-2xl text-purple-600">{gameCode}</span>
-          </p>
+        {/* Main Card */}
+        <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 border border-purple-500/30 shadow-2xl shadow-purple-500/20">
+          {/* Game Code Display */}
+          <div className="text-center mb-6">
+            <p className="text-purple-400 text-sm font-medium uppercase tracking-wide mb-2">Game Code</p>
+            <div 
+              onClick={copyGameCode}
+              className="bg-slate-900/50 rounded-2xl py-4 px-6 cursor-pointer hover:bg-slate-900/70 transition-colors border-2 border-dashed border-purple-500/30 hover:border-purple-500/50"
+            >
+              <span className="font-mono font-black text-4xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 tracking-[0.2em]">
+                {gameCode}
+              </span>
+            </div>
+            <p className="text-purple-400/60 text-xs mt-2">Tap to copy</p>
+          </div>
           
           {/* Invite Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <div className="grid grid-cols-3 gap-2 mb-6">
             <button
               onClick={copyGameCode}
-              className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 active:scale-95 text-gray-700 font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-all duration-75 flex items-center justify-center gap-2 text-sm sm:text-base min-h-[44px]"
+              className="bg-slate-700/50 hover:bg-slate-600/50 active:scale-95 text-white font-medium py-3 px-3 rounded-xl transition-all duration-150 flex flex-col items-center gap-1 border border-purple-500/20"
               style={{ touchAction: 'manipulation' }}
-              title="Copy game code"
             >
-              📋 <span className="hidden sm:inline">Copy Code</span><span className="sm:hidden">Code</span>
+              <span className="text-xl">📋</span>
+              <span className="text-xs">Code</span>
             </button>
             
             <button
               onClick={copyInviteLink}
-              className="bg-blue-100 hover:bg-blue-200 active:bg-blue-300 active:scale-95 text-blue-700 font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-all duration-75 flex items-center justify-center gap-2 text-sm sm:text-base min-h-[44px]"
+              className="bg-slate-700/50 hover:bg-slate-600/50 active:scale-95 text-white font-medium py-3 px-3 rounded-xl transition-all duration-150 flex flex-col items-center gap-1 border border-purple-500/20"
               style={{ touchAction: 'manipulation' }}
-              title="Copy invite link"
             >
-              🔗 <span className="hidden sm:inline">Copy Link</span><span className="sm:hidden">Link</span>
+              <span className="text-xl">🔗</span>
+              <span className="text-xs">Link</span>
             </button>
             
             <button
               onClick={shareGame}
-              className="bg-green-100 hover:bg-green-200 active:bg-green-300 active:scale-95 text-green-700 font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-all duration-75 flex items-center justify-center gap-2 text-sm sm:text-base min-h-[44px]"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 active:scale-95 text-white font-medium py-3 px-3 rounded-xl transition-all duration-150 flex flex-col items-center gap-1 shadow-lg shadow-green-500/30"
               style={{ touchAction: 'manipulation' }}
-              title="Share with friends"
             >
-              📤 Share
+              <span className="text-xl">📤</span>
+              <span className="text-xs">Share</span>
             </button>
           </div>
-        </div>
-        
-        {/* Players List */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Players ({players.length})</h2>
-          <div className="space-y-2">
-            {players.map(player => (
-              <div 
-                key={player.id} 
-                className="bg-gray-100 rounded-lg p-3 flex items-center justify-between"
+          
+          {/* Players List */}
+          <div className="mb-6">
+            <h2 className="text-sm font-bold text-purple-300 mb-3 uppercase tracking-wide flex items-center gap-2">
+              <span>👥</span> Players ({players.length})
+            </h2>
+            <div className="space-y-2">
+              {players.map(player => (
+                <div 
+                  key={player.id} 
+                  className={`rounded-xl p-3 flex items-center justify-between transition-all ${
+                    player.id === playerId 
+                      ? 'bg-gradient-to-r from-purple-600/50 to-pink-600/50 border border-purple-500/50' 
+                      : 'bg-slate-700/30 border border-transparent'
+                  }`}
+                >
+                  <span className="font-medium text-white flex items-center gap-2">
+                    <span className="text-xl">{['😀', '🎮', '🚀', '⚡', '🎨', '🎯', '🏆', '🌟'][parseInt(player.avatarId || '1') - 1] || '😀'}</span>
+                    <span>{player.displayName}</span>
+                    {player.id === playerId && (
+                      <span className="text-xs text-purple-400 font-normal">(You)</span>
+                    )}
+                  </span>
+                  {player.isHost && (
+                    <span className="bg-yellow-500/20 text-yellow-400 text-xs font-bold px-2 py-1 rounded-full">
+                      👑 HOST
+                    </span>
+                  )}
+                </div>
+              ))}
+              
+              {/* Waiting for players indicator */}
+              {players.length < 2 && (
+                <div className="rounded-xl p-3 border-2 border-dashed border-purple-500/30 text-center">
+                  <span className="text-purple-400/60 text-sm">Waiting for more players...</span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Start Button (host only, or solo player) */}
+          {(isHost || players.length === 1) && (
+            <>
+              {players.length === 1 && (
+                <p className="text-center text-sm text-purple-400/60 mb-3">
+                  💡 You can start solo or wait for others
+                </p>
+              )}
+              <button
+                onClick={handleStartGame}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 active:scale-95 text-white font-black py-5 px-8 rounded-2xl transition-all duration-150 text-xl shadow-lg shadow-green-500/30 hover:shadow-green-500/50 border-b-4 border-green-700 active:border-b-0 active:mt-1"
+                style={{ touchAction: 'manipulation' }}
               >
-                <span className="font-medium">
-                  {player.displayName}
-                  {player.id === playerId && ' (You)'}
+                <span className="flex items-center justify-center gap-3">
+                  <span className="text-2xl">🎮</span>
+                  {players.length === 1 ? 'START SOLO' : 'START GAME'}
                 </span>
-                {player.isHost && <span className="text-yellow-500">👑 Host</span>}
+              </button>
+            </>
+          )}
+          
+          {!isHost && players.length > 1 && (
+            <div className="text-center py-4">
+              <div className="inline-flex items-center gap-2 text-purple-400">
+                <span className="animate-pulse">⏳</span>
+                <span>Waiting for host to start...</span>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
         
-        {/* Start Button (host only, or solo player) */}
-        {(isHost || players.length === 1) && (
-          <>
-            {players.length === 1 && (
-              <p className="text-center text-sm text-gray-500 mb-2">
-                💡 You can start solo or wait for others to join
-              </p>
-            )}
-            <button
-              onClick={handleStartGame}
-              className="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 active:scale-98 text-white font-bold py-3 sm:py-4 px-6 rounded-lg sm:rounded-xl transition-all duration-75 text-base sm:text-lg min-h-[56px]"
-              style={{ touchAction: 'manipulation' }}
-            >
-              🎮 {players.length === 1 ? 'Start Solo Game' : 'Start Game'}
-            </button>
-          </>
-        )}
-        
-        {!isHost && players.length > 1 && (
-          <p className="text-center text-gray-500 text-sm sm:text-base">
-            Waiting for host to start the game...
-          </p>
-        )}
+        {/* Leave button */}
+        <button
+          onClick={handleGoHome}
+          className="w-full mt-4 text-purple-400/60 hover:text-purple-300 font-medium py-2 transition-colors"
+        >
+          ← Leave Room
+        </button>
       </div>
     </div>
   );

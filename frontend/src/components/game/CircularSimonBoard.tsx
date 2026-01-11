@@ -3,6 +3,8 @@
  * 
  * Authentic circular Simon game with proper pie-slice wedges using SVG paths.
  * Replicates the iconic look of the original 1978 Simon game.
+ * 
+ * UI Design: Dark theme with neon glows (Top Game App Style)
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -98,11 +100,11 @@ const ColorWedge: React.FC<WedgeProps> = ({
   outerRadius,
 }) => {
   // DIMMED base colors (darker when inactive) and VERY BRIGHT when active
-  const colors: Record<Color, { dim: string; bright: string }> = {
-    green: { dim: '#1a7a28', bright: '#44ff66' },  // Dark green -> Neon green
-    red: { dim: '#8b1a1a', bright: '#ff4444' },    // Dark red -> Bright red
-    yellow: { dim: '#8b7a00', bright: '#ffff00' }, // Dark yellow -> Pure yellow
-    blue: { dim: '#0a3d6b', bright: '#44aaff' },   // Dark blue -> Bright blue
+  const colors: Record<Color, { dim: string; bright: string; glow: string }> = {
+    green: { dim: '#166534', bright: '#22ff66', glow: '#22c55e' },  // Dark green -> Neon green
+    red: { dim: '#991b1b', bright: '#ff3333', glow: '#ef4444' },    // Dark red -> Bright red
+    yellow: { dim: '#a16207', bright: '#ffff00', glow: '#facc15' }, // Dark yellow -> Pure yellow
+    blue: { dim: '#1e40af', bright: '#44bbff', glow: '#3b82f6' },   // Dark blue -> Bright blue
   };
 
   const wedgeColor = colors[color];
@@ -121,18 +123,18 @@ const ColorWedge: React.FC<WedgeProps> = ({
     <path
       d={path}
       fill={fillColor}
-      stroke="#000"
-      strokeWidth="5"
+      stroke="#0f0f23"
+      strokeWidth="6"
       onClick={disabled ? undefined : onClick}
       style={{
         cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'fill 0.1s ease, filter 0.1s ease, transform 0.1s ease',
         filter: isActive 
-          ? `brightness(1.5) drop-shadow(0 0 30px ${wedgeColor.bright}) drop-shadow(0 0 60px ${wedgeColor.bright})` 
+          ? `brightness(1.5) drop-shadow(0 0 40px ${wedgeColor.glow}) drop-shadow(0 0 80px ${wedgeColor.glow})` 
           : 'brightness(1)',
         transformOrigin: `${centerX}px ${centerY}px`,
-        transform: isActive ? 'scale(1.05)' : 'scale(1)',
-        opacity: disabled ? 0.6 : 1,
+        transform: isActive ? 'scale(1.03)' : 'scale(1)',
+        opacity: disabled ? 0.5 : 1,
       }}
       role="button"
       aria-label={`${color} button`}
@@ -338,62 +340,89 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
   };
 
   return (
-    <div className="game-area flex flex-col items-center gap-3 w-full">
-      {/* Round Display */}
+    <div className="game-area flex flex-col items-center gap-4 w-full">
+      {/* Round Display - Prominent */}
       <div className="text-center">
-        <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">
-          Round {round}
-        </h2>
+        <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl px-8 py-3 border border-purple-500/30">
+          <h2 className="text-sm text-purple-400 font-bold uppercase tracking-wider mb-1">
+            Round
+          </h2>
+          <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            {round}
+          </div>
+        </div>
+        
         {isShowingSequence ? (
-          <div className="bg-yellow-500/20 border border-yellow-500 rounded-lg px-4 py-2 animate-pulse">
-            <p className="text-yellow-400 font-bold text-base">
-              👀 MEMORIZE THE PATTERN!
+          <div className="mt-3 bg-yellow-500/20 border border-yellow-500/50 rounded-xl px-4 py-2 animate-pulse">
+            <p className="text-yellow-400 font-bold text-sm uppercase tracking-wide">
+              👀 Watch closely!
             </p>
           </div>
-        ) : (
-          <p className="text-xs sm:text-sm text-gray-300">
-            {disabled 
-              ? '👻 Spectating...' 
-              : isInputPhase
-                ? '🎮 Repeat the pattern!' 
-                : '✅ Ready'}
-          </p>
-        )}
+        ) : isInputPhase ? (
+          <div className="mt-3 bg-green-500/20 border border-green-500/50 rounded-xl px-4 py-2">
+            <p className="text-green-400 font-bold text-sm uppercase tracking-wide">
+              🎮 Your turn!
+            </p>
+          </div>
+        ) : disabled ? (
+          <div className="mt-3 bg-slate-700/50 rounded-xl px-4 py-2">
+            <p className="text-slate-400 text-sm">
+              👻 Spectating...
+            </p>
+          </div>
+        ) : null}
       </div>
 
-      {/* Timer Display */}
+      {/* Timer Display - Large and dramatic */}
       {isInputPhase && secondsRemaining > 0 && (
-        <div className="flex flex-col items-center">
+        <div className="relative">
           <div 
             className={`
-              font-bold transition-all duration-200
-              ${secondsRemaining > 10 ? 'text-3xl' : ''}
-              ${secondsRemaining > 5 && secondsRemaining <= 10 ? 'text-4xl' : ''}
-              ${secondsRemaining <= 5 ? 'text-5xl' : ''}
-              ${timerColor === 'green' ? 'text-green-400' : ''}
-              ${timerColor === 'yellow' ? 'text-yellow-400' : ''}
-              ${timerColor === 'red' ? 'text-red-400' : ''}
-              ${isTimerPulsing ? 'animate-pulse' : ''}
+              font-black transition-all duration-200 tabular-nums
+              ${secondsRemaining > 10 ? 'text-5xl' : ''}
+              ${secondsRemaining > 5 && secondsRemaining <= 10 ? 'text-6xl' : ''}
+              ${secondsRemaining <= 5 ? 'text-7xl' : ''}
+              ${timerColor === 'green' ? 'text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.5)]' : ''}
+              ${timerColor === 'yellow' ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]' : ''}
+              ${timerColor === 'red' ? 'text-red-400 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]' : ''}
+              ${isTimerPulsing ? 'animate-pulse scale-110' : ''}
             `}
           >
-            {secondsRemaining}s
+            {secondsRemaining}
           </div>
+          {secondsRemaining <= 5 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={`w-full h-full rounded-full ${timerColor === 'red' ? 'bg-red-500/20' : 'bg-yellow-500/20'} animate-ping`} />
+            </div>
+          )}
         </div>
       )}
 
       {/* SVG Circular Simon Board */}
       <div className="relative w-full max-w-[min(85vw,320px)] mx-auto">
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-pink-500/20 blur-xl scale-110" />
+        
         <svg
           viewBox={`0 0 ${size} ${size}`}
-          className="w-full h-auto"
+          className="w-full h-auto relative z-10"
           style={{ touchAction: 'manipulation' }}
         >
-          {/* Background circle */}
+          {/* Background circle with gradient */}
+          <defs>
+            <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#1e1b4b" />
+              <stop offset="100%" stopColor="#0f0f23" />
+            </radialGradient>
+          </defs>
+          
           <circle
             cx={centerX}
             cy={centerY}
-            r={outerRadius + 5}
-            fill="#1a1a1a"
+            r={outerRadius + 8}
+            fill="url(#bgGradient)"
+            stroke="#3b3b6b"
+            strokeWidth="2"
           />
 
           {/* Colored wedges */}
@@ -418,8 +447,8 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
             cx={centerX}
             cy={centerY}
             r={innerRadius - 2}
-            fill="#1a1a1a"
-            stroke="#333"
+            fill="#0f0f23"
+            stroke="#3b3b6b"
             strokeWidth="3"
           />
 
@@ -432,19 +461,19 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
                 y={centerY + 8}
                 textAnchor="middle"
                 fill="#fff"
-                fontSize="32"
-                fontWeight="bold"
-                fontFamily="Arial, sans-serif"
+                fontSize="36"
+                fontWeight="900"
+                fontFamily="system-ui, -apple-system, sans-serif"
               >
                 {sequenceIndex + 1}
               </text>
               <text
                 x={centerX}
-                y={centerY + 24}
+                y={centerY + 26}
                 textAnchor="middle"
-                fill="#888"
+                fill="#a78bfa"
                 fontSize="12"
-                fontFamily="Arial, sans-serif"
+                fontFamily="system-ui, -apple-system, sans-serif"
               >
                 of {sequence.length}
               </text>
@@ -452,13 +481,13 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
           ) : (
             <text
               x={centerX}
-              y={centerY + 6}
+              y={centerY + 8}
               textAnchor="middle"
-              fill="white"
-              fontSize="18"
-              fontWeight="bold"
-              fontFamily="Arial, sans-serif"
-              letterSpacing="2"
+              fill="#a78bfa"
+              fontSize="20"
+              fontWeight="900"
+              fontFamily="system-ui, -apple-system, sans-serif"
+              letterSpacing="3"
             >
               SIMON
             </text>
@@ -468,14 +497,14 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
 
       {/* Player Sequence Display */}
       {isInputPhase && playerSequence.length > 0 && (
-        <div className="bg-gray-700/80 rounded-lg p-2 w-full max-w-[min(85vw,320px)]">
-          <div className="flex justify-center items-center gap-1 min-h-[28px]">
+        <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 w-full max-w-[min(85vw,320px)] border border-purple-500/30">
+          <div className="flex justify-center items-center gap-1.5 min-h-[32px]">
             {playerSequence.map((color, i) => (
-              <span key={i} className="text-xl">
+              <span key={i} className="text-2xl">
                 {getColorEmoji(color)}
               </span>
             ))}
-            <span className="text-gray-400 text-xs ml-2">
+            <span className="text-purple-400 text-sm font-bold ml-3 bg-purple-500/20 px-2 py-1 rounded-lg">
               {playerSequence.length}/{sequence.length}
             </span>
           </div>
@@ -494,15 +523,23 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
           disabled={!canSubmit}
           style={{ touchAction: 'manipulation' }}
           className={`
-            w-full max-w-[min(85vw,320px)] px-6 py-3 rounded-xl font-bold text-base
-            min-h-[56px]
-            transition-all duration-100
+            w-full max-w-[min(85vw,320px)] px-6 py-4 rounded-2xl font-black text-xl
+            min-h-[64px]
+            transition-all duration-150
             ${canSubmit 
-              ? 'bg-green-500 hover:bg-green-600 active:bg-green-700 text-white cursor-pointer shadow-lg active:scale-95' 
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'}
+              ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white cursor-pointer shadow-lg shadow-green-500/30 hover:shadow-green-500/50 border-b-4 border-green-700 active:border-b-0 active:mt-1 active:scale-95' 
+              : 'bg-slate-700 text-slate-400 cursor-not-allowed border-b-4 border-slate-800'}
           `}
         >
-          {canSubmit ? '✅ SUBMIT' : `⏳ ${playerSequence.length}/${sequence.length}`}
+          {canSubmit ? (
+            <span className="flex items-center justify-center gap-2">
+              <span>✅</span> SUBMIT
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2">
+              <span>⏳</span> {playerSequence.length}/{sequence.length}
+            </span>
+          )}
         </button>
       )}
     </div>
