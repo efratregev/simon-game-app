@@ -20,7 +20,7 @@ services:
   - type: web
     name: simon-game-frontend
     runtime: static
-    buildCommand: cd frontend && npm ci && npm run build
+    buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
