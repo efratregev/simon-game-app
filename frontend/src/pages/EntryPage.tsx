@@ -67,7 +67,7 @@ export function EntryPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-3 sm:p-4">
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center mb-2">🎮 Simon Says</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-center mb-2">🎮 Regev Said</h1>
           <p className="text-gray-600 text-center mb-6 sm:mb-8 text-sm sm:text-base">Color Race Edition</p>
           
           <div className="space-y-3 sm:space-y-4">
