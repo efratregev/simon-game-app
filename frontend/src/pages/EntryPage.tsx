@@ -204,13 +204,6 @@ export function EntryPage() {
               </button>
             </div>
 
-            {/* Back Button */}
-            <button
-              onClick={() => setMode('menu')}
-              className="w-full mt-6 text-purple-400/60 hover:text-purple-300 font-medium py-2 transition-colors"
-            >
-              ← Back to Menu
-            </button>
           </div>
         </div>
       </div>
