@@ -165,6 +165,15 @@ export function EntryPage() {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
+        {/* Back Button - Top Left */}
+        <button
+          onClick={() => setMode('menu')}
+          className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-slate-800/80 backdrop-blur-xl border border-purple-500/30 text-purple-400 hover:text-purple-300 active:text-purple-200 px-4 py-3 rounded-xl font-medium transition-all active:scale-95"
+          style={{ touchAction: 'manipulation' }}
+        >
+          <span>←</span> Back
+        </button>
+
         <div className="relative z-10 w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-6">
@@ -229,6 +238,15 @@ export function EntryPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
+      {/* Back Button - Top Left */}
+      <button
+        onClick={() => setMode(getBackDestination())}
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-slate-800/80 backdrop-blur-xl border border-purple-500/30 text-purple-400 hover:text-purple-300 active:text-purple-200 px-4 py-3 rounded-xl font-medium transition-all active:scale-95"
+        style={{ touchAction: 'manipulation' }}
+      >
+        <span>←</span> Back
+      </button>
+
       <div className="relative z-10 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-6">
@@ -242,14 +260,6 @@ export function EntryPage() {
 
         {/* Form Card */}
         <div className="bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-purple-500/30 shadow-2xl shadow-purple-500/20">
-          {/* Back Button */}
-          <button
-            onClick={() => setMode(getBackDestination())}
-            className="flex items-center gap-2 text-purple-400 hover:text-purple-300 active:text-purple-200 mb-6 font-medium transition-colors"
-          >
-            <span>←</span> Back
-          </button>
-          
           <form onSubmit={isSolo ? handleSoloPlay : (isJoin ? handleJoinGame : handleCreateGame)} className="space-y-5">
             {/* Display Name */}
             <div>

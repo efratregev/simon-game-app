@@ -444,6 +444,15 @@ export function WaitingRoomPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
       
+      {/* Leave Room Button - Top Left */}
+      <button
+        onClick={handleGoHome}
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-slate-800/80 backdrop-blur-xl border border-purple-500/30 text-purple-400 hover:text-purple-300 active:text-purple-200 px-4 py-3 rounded-xl font-medium transition-all active:scale-95"
+        style={{ touchAction: 'manipulation' }}
+      >
+        <span>←</span> Leave
+      </button>
+      
       {/* Toast notification */}
       {toast && (
         <Toast
@@ -576,13 +585,6 @@ export function WaitingRoomPage() {
           )}
         </div>
         
-        {/* Leave button */}
-        <button
-          onClick={handleGoHome}
-          className="w-full mt-4 text-purple-400/60 hover:text-purple-300 font-medium py-2 transition-colors"
-        >
-          ← Leave Room
-        </button>
       </div>
     </div>
   );
