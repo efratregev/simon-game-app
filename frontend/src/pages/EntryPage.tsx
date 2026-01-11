@@ -12,6 +12,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createSession, joinGame } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
+import { socketService } from '../services/socketService';
+import { soundService } from '../services/soundService';
 
 type Mode = 'menu' | 'solo' | 'multiplayer' | 'create' | 'join';
 
@@ -68,16 +70,43 @@ export function EntryPage() {
     }
   };
 
-  // Handle solo play - creates a game and immediately starts (skips waiting room)
+  // Handle solo play - creates a game, connects socket, and starts immediately
   const handleSoloPlay = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      // Initialize sound on user interaction
+      await soundService.init();
+      
+      // Create session
       const response = await createSession(displayName, avatarId);
       setSession(response.session);
-      // Pass solo=true to auto-start the game
+      
+      const { gameCode, playerId } = response.session;
+      
+      // Connect socket and start game immediately
+      const socket = socketService.connect();
+      
+      // Wait for socket to connect
+      await new Promise<void>((resolve) => {
+        if (socket.connected) {
+          resolve();
+        } else {
+          socket.once('connect', () => resolve());
+        }
+      });
+      
+      // Join room
+      socket.emit('join_room_socket', { gameCode, playerId });
+      
+      // Wait briefly for room state, then start game
+      setTimeout(() => {
+        socket.emit('start_game', { gameCode, playerId });
+      }, 100);
+      
+      // Navigate to game page (will show countdown)
       navigate('/waiting?solo=true');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start game');
