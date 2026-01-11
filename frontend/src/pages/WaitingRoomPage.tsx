@@ -401,6 +401,7 @@ export function WaitingRoomPage() {
             secondsRemaining={secondsRemaining}
             timerColor={timerColor}
             isTimerPulsing={isTimerPulsing}
+            isSoloMode={isSoloMode}
           />
           
           {/* Message Display */}

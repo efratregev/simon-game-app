@@ -29,6 +29,7 @@ interface CircularSimonBoardProps {
   secondsRemaining: number;
   timerColor: 'green' | 'yellow' | 'red';
   isTimerPulsing: boolean;
+  isSoloMode?: boolean;
 }
 
 // =============================================================================
@@ -165,6 +166,7 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
   secondsRemaining,
   timerColor,
   isTimerPulsing,
+  isSoloMode = false,
 }) => {
   const [activeColor, setActiveColor] = useState<Color | null>(null);
 
@@ -358,7 +360,7 @@ export const CircularSimonBoard: React.FC<CircularSimonBoardProps> = ({
               👀 Watch closely!
             </p>
           </div>
-        ) : isInputPhase ? (
+        ) : isInputPhase && !isSoloMode ? (
           <div className="mt-3 bg-green-500/20 border border-green-500/50 rounded-xl px-4 py-2">
             <p className="text-green-400 font-bold text-sm uppercase tracking-wide">
               🎮 Your turn!
