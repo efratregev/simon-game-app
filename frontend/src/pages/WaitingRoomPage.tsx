@@ -413,15 +413,6 @@ export function WaitingRoomPage() {
     );
   }
   
-  // Solo mode: Show minimal loading while waiting for game to start
-  if (isSoloMode && !isGameActive) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-4xl animate-spin">🎮</div>
-      </div>
-    );
-  }
-
   // Render countdown (multiplayer only - solo skips this)
   if (!isSoloMode && roomStatus === 'countdown' && countdownValue !== null) {
     return (
