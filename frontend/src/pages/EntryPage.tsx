@@ -177,7 +177,6 @@ export function EntryPage() {
         <div className="relative z-10 w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="text-5xl mb-3">👥</div>
             <h1 className="text-3xl font-black text-white mb-1">
               Play with Friends
             </h1>
@@ -223,7 +222,7 @@ export function EntryPage() {
   // Solo or Create/Join forms
   const isSolo = mode === 'solo';
   const isJoin = mode === 'join';
-  const formTitle = isSolo ? '🎯 Play Solo' : isJoin ? '🎯 Join Room' : '🚀 Create Room';
+  const formTitle = isSolo ? 'Play Solo' : isJoin ? 'Join Room' : 'Create Room';
   const formSubtitle = isSolo 
     ? 'Enter your name to start' 
     : isJoin 

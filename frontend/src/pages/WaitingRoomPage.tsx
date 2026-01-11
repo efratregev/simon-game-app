@@ -465,7 +465,7 @@ export function WaitingRoomPage() {
       <div className="relative z-10 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-black text-white mb-1">⏳ Waiting Room</h1>
+          <h1 className="text-3xl font-black text-white mb-1">Waiting Room</h1>
           <p className="text-purple-300">Invite friends to join!</p>
         </div>
         
