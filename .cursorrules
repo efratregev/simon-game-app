@@ -92,3 +92,86 @@ mcp_render_list_services - List all services
 ## GitHub Repository
 https://github.com/efratregev/simon-game-app
 
+---
+
+## UI Design Skills - Top Game App Patterns
+
+Based on: Candy Crush, Clash of Clans, PUBG Mobile, Roblox, Pokémon GO
+
+### 1. Visual Impact
+- **Bold, saturated colors** - No pastels, use vibrant primary colors
+- **High contrast** - Important elements pop (buttons, scores, timers)
+- **Dark backgrounds** with bright accents (like PUBG, Clash of Clans)
+- **Gradient backgrounds** to add depth and energy
+- **Glows and shadows** - Make interactive elements feel touchable
+
+### 2. Touch-First Design
+- **Large tap targets** - Minimum 48x48px, ideally 56-72px for game actions
+- **Generous spacing** - Fingers are imprecise, prevent mis-taps
+- **Bottom-heavy UI** - Primary actions within thumb reach
+- **No hover states needed** - Design for tap, not mouse
+- **Edge-to-edge design** - Use full screen real estate
+
+### 3. Instant Feedback
+- **Every tap = reaction** - Scale, color change, sound, haptic
+- **Animations under 300ms** - Fast, snappy, responsive
+- **Loading states** - Never leave users wondering (spinners, skeletons)
+- **State transitions** - Smooth morphs between screens
+- **Button press states** - Scale down + darken on active
+
+### 4. Reward & Delight
+- **Particle effects** - Confetti, sparkles, explosions on wins
+- **Progress visualization** - XP bars, level indicators, streaks
+- **Achievement celebrations** - Full-screen takeovers for big moments
+- **Combo/streak feedback** - Escalating rewards feel amazing
+- **Sound + visual sync** - Audio reinforces every action
+
+### 5. Visual Hierarchy
+- **One primary action per screen** - Make it obvious what to do
+- **Size = importance** - Biggest element is the main focus
+- **Color coding** - Green=go/success, Red=danger/stop, Gold=premium
+- **Icons + text** - Never rely on icons alone
+- **Z-depth layers** - Cards float, modals overlay, depth creates focus
+
+### 6. Typography
+- **Bold, playful fonts** - Not corporate, not boring
+- **Large text** - 18px minimum for body, 24px+ for headings
+- **Numbers stand out** - Scores, timers, countdowns are HUGE and prominent
+- **High contrast text** - White on dark, dark on light
+- **Text shadows** for readability on busy backgrounds
+
+### 7. Onboarding
+- **Show, don't tell** - Interactive tutorials, not text walls
+- **Progressive disclosure** - Reveal features gradually
+- **Skip option** - Respect returning users
+- **First win in 30 seconds** - Hook players immediately
+- **Contextual hints** - Tooltips appear when needed
+
+### 8. Emotional Design
+- **Personality** - Characters, mascots, playful copy
+- **Sound design** - Satisfying clicks, victory fanfares, error buzzes
+- **Anticipation** - Countdowns, reveals, suspense building
+- **Social proof** - Show other players, leaderboards, activity
+- **Loss aversion** - Streaks, daily rewards, "don't lose your progress"
+
+### 9. Color Palette (Game Standard)
+```
+Primary Actions:    #22C55E (Green) - Go, Success, Confirm
+Danger/Stop:        #EF4444 (Red) - Error, Eliminate, Cancel  
+Premium/Gold:       #F59E0B (Amber) - Special, Reward, VIP
+Info/Secondary:     #3B82F6 (Blue) - Info, Links, Secondary
+Background Dark:    #1E1B4B (Indigo-900) - Main background
+Background Light:   #312E81 (Indigo-800) - Cards, panels
+Text Primary:       #FFFFFF - Main text on dark
+Text Secondary:     #A5B4FC (Indigo-300) - Subtle text
+```
+
+### 10. Animation Timing
+```
+Micro-interactions: 100-150ms (button press, toggles)
+State changes:      200-300ms (page transitions, modals)
+Celebrations:       500-800ms (confetti, victory screens)
+Loading:            Infinite subtle pulse/spin
+Easing:             ease-out for enters, ease-in for exits
+```
+
